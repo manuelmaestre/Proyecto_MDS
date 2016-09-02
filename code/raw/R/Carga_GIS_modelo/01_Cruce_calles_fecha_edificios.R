@@ -34,8 +34,9 @@ tipos_via_cat <- tipos_via_cat[value != ""]
 tipos_via_cat$variable <- NULL
 colnames(tipos_via_cat) <- c("cod_tipo_via", "descripcion",  "tipo_via")
 
-# Eliminamos las tildes del tipo de via Ivima
+# Eliminamos las tildes del tipo de via Ivima y del nombre de via
 fincas_ivima$tipo_via <- chartr('ÁÉÍÓÚ','AEIOU', fincas_ivima$tipo_via)
+fincas_ivima$nombre_via <- chartr('ÁÉÍÓÚ','AEIOU', fincas_ivima$nombre_via)
 
 ## Verificamos que los tipos de via de IVIMA y catastro coinciden sus literales
 tipos_via_ivima <- data.table(table(fincas_ivima$tipo_via))
@@ -55,36 +56,53 @@ fincas_ivima <- drop_na(fincas_ivima, tipo_via_cat)
 
 callejero_ivima <- fincas_ivima[, .N, by = .(tipo_via_cat, nombre_via)]
 callejero_cat <- fincas_catastro[, .N, by = .(tipo_via, nombre_via)]
-#callejero_cat$N <- NULL
-#callejero_ivima$N <- NULL
 colnames(callejero_ivima) <- c("tipo_via", "nombre_via_ivima", "N")
 colnames(callejero_cat) <- c("tipo_via", "nombre_via_cat", "N")
-
-
+callejero_ivima$tipo_via <- as.character(callejero_ivima$tipo_via)
+callejero_ivima$nombre_via_ivima <- as.character(callejero_ivima$nombre_via_ivima)
+callejero_cat$tipo_via <- as.character(callejero_cat$tipo_via)
+callejero_cat$nombre_via_cat <- as.character(callejero_cat$nombre_via_cat)
 
 cruce_directo <- merge(callejero_ivima, callejero_cat, all.x = T, by.x = c("tipo_via", "nombre_via_ivima"), by.y = c("tipo_via", "nombre_via_cat"))
-#matriz_lev <- matriz_lev[, distancia := adist(nombre_via_ivima, nombre_via_cat)/max(c(nchar(nombre_via_ivima), nchar(nombre_via_cat))),]
+
 
 ## Separamos las calles en las que los literales de catastro e ivima son iguales
-calles_cruzadas <- cruce_directo[is.na(matriz_lev$N.y) == F]
-calles_pendientes <- cruce_directo[is.na(matriz_lev$N.y) == T]
+calles_cruzadas <- cruce_directo[is.na(cruce_directo$N.y) == F]
+calles_pendientes <- cruce_directo[is.na(cruce_directo$N.y) == T]
 
-## Eliminamos las cruzadas de ambos callejeros
-catastro_pendientes <- merge(callejero_cat, calles_cruzadas, all.x = T, by.x = c("tipo_via", "nombre_via_cat"), by.y=c("tipo_via", "nombre_via_ivima"))
-catastro_pendientes <- drop_na(catastro_pendientes, N.x)
-catastro_pendientes$N.x <- NULL
-catastro_pendientes$N.y <- NULL
-
-calles_pendientes$N.y <- NULL
 calles_pendientes$N.x <- NULL
-catastro_pendientes$N <- NULL
+calles_pendientes$N.y <- NULL
+calles_cruzadas$N.x <- NULL
+calles_cruzadas$N.y <- NULL
+calles_cruzadas$nombre_via_cat <- calles_cruzadas$nombre_via_ivima
 
-calles_pendientes$nombre_via_ivima <- as.character(calles_pendientes$nombre_via_ivima)
-catastro_pendientes$nombre_via_cat <- as.character(catastro_pendientes$nombre_via_cat)
 
-matriz_lev <- merge(calles_pendientes, catastro_pendientes, all.x = T, by.x = c("tipo_via"), by.y = c("tipo_via"), allow.cartesian = T)
-#matriz_lev <- matriz_lev[1:100]
+matriz_lev <- merge(calles_pendientes, callejero_cat, all.x = T, by.x = c("tipo_via"), by.y = c("tipo_via"), allow.cartesian = T)
+matriz_lev$N <- NULL
 matriz_lev <- matriz_lev[, distancia := adist(nombre_via_ivima, nombre_via_cat)/max(c(nchar(nombre_via_ivima), nchar(nombre_via_cat))), by = "nombre_via_ivima"]
 matriz_lev <- matriz_lev[, ranking := rank(distancia, ties = "random"), by = "nombre_via_ivima"]
-matriz_5 <- matriz_lev[ranking<5]
-setcolorder(matriz_5, c("tipo_via","nombre_via_ivima", "nombre_via_cat", "ranking", "distancia"))
+
+## Hay que revisar manual/visualmente las coincidencias, marcarlas como correctas añadir a calles cruzadas, eliminar de la matriz y repetir para el siguiente
+## ranking, hasta conseguir una normalización suficiente
+
+matriz_analisis <- matriz_lev[ranking==1]
+matriz_analisis[order(matriz_analisis$ranking)]
+setcolorder(matriz_analisis, c("tipo_via","nombre_via_ivima", "nombre_via_cat", "ranking", "distancia"))
+setorder(matriz_analisis, tipo_via, nombre_via_ivima, ranking)
+matriz_analisis$correcta <- 1
+matriz_analisis <- edit(matriz_analisis)
+#write.csv(matriz_analisis, '../../../../data/raw/matriz_cruce_manual.csv', row.names = F)
+calles_cruzadas <- rbind(calles_cruzadas, matriz_analisis[is.na(matriz_analisis$correcta) == F, c("tipo_via", "nombre_via_ivima", "nombre_via_cat")])
+
+# Eliminamos las cruzadas para analizar las de ranking 2
+matriz_analisis <- matriz_lev[ranking==2]
+calles_cruzadas$mark <- 1
+matriz_analisis <- merge(matriz_analisis, calles_cruzadas, all.x = T, by.x = c("tipo_via", "nombre_via_ivima"), 
+                         by.y = c("tipo_via", "nombre_via_ivima"))
+matriz_analisis <- matriz_analisis[is.na(matriz_analisis$mark) == T, .(tipo_via,nombre_via_ivima, nombre_via_cat.x, distancia, ranking)]
+
+
+
+
+
+
