@@ -153,7 +153,7 @@ tmp <- merge(portalero.ivima, portalero.catastro, by.x = c("tipo_via_cat", "nomb
 
 ## Poblamos en fincas IVIMA los datos de catastro: mejor dato de año, coorxy, barrio, 
 
-
+portalero.catastro[x_coor == 0]
 
 
 
