@@ -15,7 +15,7 @@ ruta <- str_c(clean.data.dir, '/SHP/Barrios Madrid')
 
 ## Cargamos la capa de barrios. Está en proyección EPGS:23030, ED50/UTM30
 
-barrios.shp <- readOGR(dsn = ruta, layer = "200001465")
+barrios.shp <- readOGR(dsn = ruta, layer = "200001465", encoding = "LATIN-1")
 proj4string(barrios.shp) <- CRS("+init=epsg:23030")
 plot(barrios.shp)
 
@@ -41,3 +41,4 @@ head(portales.con.barrio)
 
 portales.con.barrio <- merge(capa.puntos@data, portales.con.barrio, by.x = "indice", by.y = "indice")
 head(portales.con.barrio)
+table(portales.con.barrio$DESBDT)

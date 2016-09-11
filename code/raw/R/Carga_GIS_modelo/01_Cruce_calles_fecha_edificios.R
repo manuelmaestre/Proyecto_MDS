@@ -6,12 +6,17 @@
 library(data.table)
 library(stringr)
 library(tidyr)
+library(rgdal)
+#library(sp)
 
 clean.data.dir <- '../../../../data/clean'
 file.fincas.ivima <- paste(clean.data.dir,  "/IVIMA/fincas_ivima.csv", sep = "")
 file.fincas.cat <- paste(clean.data.dir,  "/ficheros_preparados/BI_28_900_U_2016-01-23.csv.gz", sep = "")
 file.tipos.via.cat <- paste(clean.data.dir,  "/CAT/tipo_via_cat.csv", sep = "")
 file.calles.cruzadas <- paste(clean.data.dir,  "/IVIMA/calles_cruzadas.csv", sep = "")
+ruta.shp <- str_c(clean.data.dir, '/SHP/Barrios Madrid')
+
+
 
 # El objetivo es normalizar las direcciones de Ivima y catastro para poder relacionar los datos de ambas fuentes en base a
 # tipo_via, nombre_via, numero_finca, letra finca
@@ -70,7 +75,7 @@ callejero_cat$tipo_via <- as.character(callejero_cat$tipo_via)
 callejero_cat$nombre_via_cat <- as.character(callejero_cat$nombre_via_cat)
 
 
-### Hay que poner un if, el proceso manual sólo se ejecuta si no lo hemos ejecutado aún creando el fichero de salida
+### Hay que poner un if, el proceso manual sólo se ejecuta si no lo hemos ejecutado aún, creando el fichero de salida
 ### si el fichero de salida ya  existe, no ejecutamos el proceso manual. Objetivo obtener "calles_cruzadas"
 
 
@@ -147,13 +152,51 @@ portalero.catastro <- portalero.catastro[, ranking := rank(-anio_mejor, ties = "
 portalero.catastro <- portalero.catastro[ranking==1]
 
 portalero.ivima <- fincas.ivima.enriquecidas[, .N, by = .(tipo_via_cat, nombre_via_cat, numfinca)]
-tmp <- merge(portalero.ivima, portalero.catastro, by.x = c("tipo_via_cat", "nombre_via_cat", "numfinca"), by.y = c("tipo_via", "nombre_via", "numfinca"))
+
+## Enriquecemos el portalero de catastro con el barrio,
+## obtenido por cruce espacial con el shape de barrios de madrid
+
+## La capa de barrios de Madrid se puede obtener en ed50 de: http://www.madrid.org/nomecalles/DescargaBDTCorte.icm. (Delimitaciones territoriales, barrios)
+
+## Cargamos la capa de barrios. Está en proyección EPGS:23030, ED50/UTM30
+
+barrios.shp <- readOGR(dsn = ruta.shp, layer = "200001465", encoding = "latin-1")
+proj4string(barrios.shp) <- CRS("+init=epsg:23030")
+plot(barrios.shp)
+
+# Creamos la capa de puntos desde las xy del portalero de catastro
+
+### Generamos el shape para poder importar directamente en GIS (solo las fincas con coordenadas),proyeccion EPGS:25830
+portalero.cat.con.coor <- portalero.catastro[portalero.catastro$x_coor != 0,]
+coordenadas <- as.matrix(portalero.cat.con.coor[,.(x_coor, y_coor)])
+capa.puntos <- SpatialPointsDataFrame(coordenadas, portalero.cat.con.coor, proj4string = CRS("+init=epsg:25830"), coords.nrs = c(4, 5), match.ID = T)
+capa.puntos <- spTransform(capa.puntos, CRS("+init=epsg:23030"))
+
+## Agregamos los datos del barrio al df de portales
+portales.con.barrio <- over(capa.puntos, barrios.shp)
+portales.con.barrio$indice <- rownames(portales.con.barrio)
+capa.puntos$indice <- rownames(capa.puntos@data)
+portales.con.barrio <- merge(capa.puntos@data, portales.con.barrio, by.x = "indice", by.y = "indice")
+
+## Eliminamos columnas sin interés, poblamos el barrio y nos quedamos sólo con fincas vivienda de catastro
+
+fincas_catastro <- fincas_catastro[clave_grupo_BI=='V',.(parcela_cat, cvia_DGC, tipo_via, nombre_via, num_pol1, bis,
+                   num_pol2, bis2, Km, bloque, escalera, planta, puerta, dir_resto, 
+                   m2_BI, m2_solares_sin_div_hor, coef_finca, garage, anio_mejor, numfinca)]
+
+portales.con.barrio$idbarrio <- data.frame(str_split(portales.con.barrio$DESBDT, " ", n=2, simplify = T))[[1]]
+portales.con.barrio$desbarrio <-  data.frame(str_split(portales.con.barrio$DESBDT, " ", n=2, simplify = T))[[2]]
+
+portales.con.barrio <- data.table(portales.con.barrio[,c("tipo_via", "nombre_via", "numfinca", "x_coor", "y_coor", "idbarrio", "desbarrio")])
+fincas_catastro <- merge(fincas_catastro, portales.con.barrio, by.x = c("tipo_via", "nombre_via", "numfinca"), by.y = c("tipo_via", "nombre_via", "numfinca"))
+
+fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, portales.con.barrio, by.x =c("tipo_via_cat", "nombre_via_cat", "numfinca"), by.y =c("tipo_via", "nombre_via", "numfinca") )
+
+fincas.ivima.enriquecidas <- fincas.ivima.enriquecidas[,.(tipo_via_cat, nombre_via_cat, numfinca, metros, habitaciones, Garaje, Precio, eur_metro, eur_metro_round, planta_cat, num_pol, letra, x_coor, y_coor, idbarrio, desbarrio)]
 
 
 
-## Poblamos en fincas IVIMA los datos de catastro: mejor dato de año, coorxy, barrio, 
 
-portalero.catastro[x_coor == 0]
 
 
 
