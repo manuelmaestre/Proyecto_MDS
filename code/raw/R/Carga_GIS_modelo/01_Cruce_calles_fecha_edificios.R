@@ -186,13 +186,41 @@ fincas_catastro <- fincas_catastro[clave_grupo_BI=='V',.(parcela_cat, cvia_DGC, 
 
 portales.con.barrio$idbarrio <- data.frame(str_split(portales.con.barrio$DESBDT, " ", n=2, simplify = T))[[1]]
 portales.con.barrio$desbarrio <-  data.frame(str_split(portales.con.barrio$DESBDT, " ", n=2, simplify = T))[[2]]
-
 portales.con.barrio <- data.table(portales.con.barrio[,c("tipo_via", "nombre_via", "numfinca", "x_coor", "y_coor", "idbarrio", "desbarrio")])
 fincas_catastro <- merge(fincas_catastro, portales.con.barrio, by.x = c("tipo_via", "nombre_via", "numfinca"), by.y = c("tipo_via", "nombre_via", "numfinca"))
-
 fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, portales.con.barrio, by.x =c("tipo_via_cat", "nombre_via_cat", "numfinca"), by.y =c("tipo_via", "nombre_via", "numfinca") )
-
 fincas.ivima.enriquecidas <- fincas.ivima.enriquecidas[,.(tipo_via_cat, nombre_via_cat, numfinca, metros, habitaciones, Garaje, Precio, eur_metro, eur_metro_round, planta_cat, num_pol, letra, x_coor, y_coor, idbarrio, desbarrio)]
+anio.max.finca <- fincas_catastro[, .(anio_max = max(anio_mejor)), by = .(tipo_via, nombre_via, numfinca)]
+fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, anio.max.finca, by.x =c("tipo_via_cat", "nombre_via_cat", "numfinca"), by.y =c("tipo_via", "nombre_via", "numfinca") )
+
+plantas_cat <- fincas_catastro[,.N, by = .(planta)]
+plantas_ivima <- fincas.ivima.enriquecidas[,.N, by = .(planta_cat)]
+
+## Tenemos poca varieadad de plantas en Ivima. Para poder extender el modelo a todas las viviendas de catastro
+## es mejor pasar la variable planta (categórica) a altura (entero) de modo que el modelo se pueda generalizar
+## Convertimos las plantas de catastro en un numérico, que llevaremos luego a las fincas de Ivima
+## Calculamos en catastro el número de plantas para cada finca, para dar un número de planta a los áticos
+## Todos los literales de planta que empiecen por número son numéricos, los que no, si empiezan por A son áticos, el
+## resto los asimilamos a Bajos
+
+## extraemos los números
+
+plantas_cat$primer_caracter <- str_sub(plantas_cat$planta,1,1) 
+plantas_cat$primer_caracter <- str_extract(plantas_cat$primer_caracter, '[a-zA-Z]')
+plantas_cat$altura <- ifelse(is.na(plantas_cat$primer_caracter)==F,plantas_cat$primer_caracter,str_extract(plantas_cat$planta, '[+-]*[0-9]+'))
+plantas_cat[grep('[B-Z]', altura), altura:='00']
+
+## Hay que calcular la altura de los áticos relativa a su edificio
+plantas_cat[,c('N','primer_caracter'):=NULL]
+fincas_catastro <- merge(fincas_catastro, plantas_cat, by.x = 'planta', by.y = 'planta')
+plantas_cat <- fincas_catastro[,.N, by = .(tipo_via, nombre_via, numfinca, altura)]
+plantas_cat <- plantas_cat[,.N, by = .(tipo_via, nombre_via, numfinca)]
+setnames(plantas_cat, 'N', 'alt_max')
+plantas_cat$atico <- 'A'
+fincas_catastro <- merge(fincas_catastro, plantas_cat, all.x = T, by.x=c('tipo_via', 'nombre_via', 'numfinca','altura'), by.y = c('tipo_via', 'nombre_via', 'numfinca','atico'))
+fincas_catastro[altura == 'A', altura:=as.character(alt_max)]
+fincas_catastro$alt_max <- NULL
+fincas_catastro$altura <- as.integer(fincas_catastro$altura)
 
 
 
