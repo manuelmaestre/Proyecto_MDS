@@ -7,6 +7,7 @@ library(data.table)
 library(stringr)
 library(tidyr)
 library(rgdal)
+library(readxl)
 #library(sp)
 
 clean.data.dir <- '../../../../data/clean'
@@ -162,7 +163,7 @@ portalero.ivima <- fincas.ivima.enriquecidas[, .N, by = .(tipo_via_cat, nombre_v
 
 barrios.shp <- readOGR(dsn = ruta.shp, layer = "200001465", encoding = "latin-1")
 proj4string(barrios.shp) <- CRS("+init=epsg:23030")
-plot(barrios.shp)
+
 
 # Creamos la capa de puntos desde las xy del portalero de catastro
 
@@ -221,10 +222,50 @@ fincas_catastro <- merge(fincas_catastro, plantas_cat, all.x = T, by.x=c('tipo_v
 fincas_catastro[altura == 'A', altura:=as.character(alt_max)]
 fincas_catastro$alt_max <- NULL
 fincas_catastro$altura <- as.integer(fincas_catastro$altura)
+plantas_cat <- fincas_catastro[,.N, by = .(tipo_via, nombre_via, numfinca,planta, altura)]
+plantas_cat$N <- NULL
+setnames(plantas_cat, c('planta','tipo_via','nombre_via'), 
+         c('planta_cat','tipo_via_cat','nombre_via_cat'))
+ 
+## La planta de fincas Ivima pasamos a número con el mismo criterio que en catastro
+## Sólo recuperamos los áticos desde catastro
+
+fincas.ivima.enriquecidas$primer_caracter_planta <- str_sub(fincas.ivima.enriquecidas$planta_cat,1,1) 
+fincas.ivima.enriquecidas$primer_caracter_planta <- str_extract(fincas.ivima.enriquecidas$primer_caracter_planta, '[a-zA-Z]')
+fincas.ivima.enriquecidas$altura <- ifelse(is.na(fincas.ivima.enriquecidas$primer_caracter_planta)==F,
+                                           fincas.ivima.enriquecidas$primer_caracter_planta,
+                                           str_extract(fincas.ivima.enriquecidas$planta, '[+-]*[0-9]+'))
+
+fincas.ivima.enriquecidas[grep('[B-Z]', altura), altura:='00']
+fincas.ivima.enriquecidas$primer_caracter_planta <- NULL
+aticos.cat <- plantas_cat[grep('^A',planta_cat)]
+aticos.cat$planta_cat <- 'A'
+setnames(aticos.cat, c('altura','planta_cat'), c('altura_num','altura'))
+
+fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, aticos.cat, all.x=T, 
+                                   by.x=c('tipo_via_cat', 'nombre_via_cat', 'numfinca', 'altura'), 
+                                   by.y=c('tipo_via_cat', 'nombre_via_cat', 'numfinca', 'altura'))
+
+fincas.ivima.enriquecidas$altura_num <- as.character(fincas.ivima.enriquecidas$altura_num)
+
+fincas.ivima.enriquecidas[is.na(altura_num)==T & altura != 'A', altura_num := altura]
+
+fincas.ivima.enriquecidas$altura_num <- as.numeric(fincas.ivima.enriquecidas$altura_num)
+
+#Corregimos el literal de barrio, los literales del shape tienen caracteres mal codificados
+#Obtenemos el listado de barrios de http://www.madrid.org/iestadis/fijas/clasificaciones/descarga/cobar15.xls
 
 
+listado.barrios <- data.table(read_excel(str_c(clean.data.dir, '/SHP/Barrios Madrid/cobar15.xls'),sheet = 'cobar15'))
+listado.barrios$idbarrio <- str_c(listado.barrios$`Código distrito`, listado.barrios$`Código barrio`)
+listado.barrios <- listado.barrios[, .N, by = .(idbarrio, `Literal barrio`)]
+listado.barrios$N <- NULL
+setnames(listado.barrios, 'Literal barrio', 'barrio')
 
+fincas_catastro <- merge(fincas_catastro, listado.barrios, by.x = 'idbarrio', by.y = 'idbarrio')
+fincas_catastro$desbarrio <- NULL
 
-
+fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, listado.barrios, by.x = 'idbarrio', by.y = 'idbarrio')
+fincas.ivima.enriquecidas$desbarrio <- NULL
 
 
