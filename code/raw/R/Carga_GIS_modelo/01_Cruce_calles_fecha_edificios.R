@@ -8,7 +8,7 @@ library(stringr)
 library(tidyr)
 library(rgdal)
 library(readxl)
-#library(sp)
+
 
 clean.data.dir <- '../../../../data/clean'
 file.fincas.ivima <- paste(clean.data.dir,  "/IVIMA/fincas_ivima.csv", sep = "")
@@ -77,7 +77,8 @@ callejero_cat$nombre_via_cat <- as.character(callejero_cat$nombre_via_cat)
 
 
 ### Hay que poner un if, el proceso manual sólo se ejecuta si no lo hemos ejecutado aún, creando el fichero de salida
-### si el fichero de salida ya  existe, no ejecutamos el proceso manual. Objetivo obtener "calles_cruzadas"
+### si el fichero de salida ya  existe, no ejecutamos el proceso manual. Objetivo obtener "calles_cruzadas", que asocia
+### los literales de calle de catastro con los de Ivima para poder enriquecer la tabla de fincas Ivima
 
 
 if (file.exists(file.calles.cruzadas) == F)
@@ -264,8 +265,16 @@ setnames(listado.barrios, 'Literal barrio', 'barrio')
 
 fincas_catastro <- merge(fincas_catastro, listado.barrios, by.x = 'idbarrio', by.y = 'idbarrio')
 fincas_catastro$desbarrio <- NULL
+fincas_catastro <- fincas_catastro[is.na(fincas_catastro$altura) == F,]
 
 fincas.ivima.enriquecidas <- merge(fincas.ivima.enriquecidas, listado.barrios, by.x = 'idbarrio', by.y = 'idbarrio')
 fincas.ivima.enriquecidas$desbarrio <- NULL
+fincas.ivima.enriquecidas <- fincas.ivima.enriquecidas[is.na(fincas.ivima.enriquecidas$altura_num) == F,]
+fincas.ivima.enriquecidas$idbarrio <- as.factor(fincas.ivima.enriquecidas$idbarrio)
+
+write.csv(fincas_catastro, str_c(clean.data.dir, '/modelo/fincas_catastro.csv'), row.names = F, fileEncoding = 'UTF-8')
+write.csv(fincas.ivima.enriquecidas, str_c(clean.data.dir, '/modelo/fincas_ivima.csv'), row.names = F, fileEncoding = 'UTF-8')
+
+
 
 
