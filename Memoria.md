@@ -1,35 +1,101 @@
-
-
-# Estimación precio alquiler en Madrid.  
-
-***
-
-### (Trabajo Fin de Master Data Science Kschool. Manuel Maestre Rodríguez)  
-### Octubre 2016
-
-
-## Objetivo del estudio.
-
-El estudio tiene por finalidad estimar el precio del alquiler de la vivienda en Madrid. Para ello se utilizarán las siguientes fuentes de datos:
-   * Datos catastrales de Madrid, obtenidos del catastro
-   * Datos del precio de alquiler en Madrid, obtenidos de IVIMA
-   * Información gráfica en formato "shape" de los barrios de Madrid
-
-## Descripción de los datos utilizados
-### Datos catastrales
-Los datos catastrales se pueden descargar de la [web de catastro](https://www.sedecatastro.gob.es/OVCFrames.aspx?TIPO=TIT&a=masiv), accesibles con certificado digital, dentro de la sección descarga de información alfanumérica.
-Los datos catastrales se procesarán para obtener la información de las viviendas de Madrid, relativa a:
-* localización de las viviendas tanto alfanumérica (dirección) como geolocalización (coordenadas x,y)
-* superficie
-* presencia de garage
-* altura
-* antigüedad
-
-## Estructura de ficheros y directorios
-
-
-
-
-## Descripción del código
-
-
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "# Estimación precio alquiler en Madrid.  \n",
+    "\n",
+    "***\n",
+    "\n",
+    "### (Trabajo Fin de Master Data Science Kschool. Manuel Maestre Rodríguez)  \n",
+    "### Octubre 2016\n",
+    "\n",
+    "\n",
+    "## Objetivo del estudio.\n",
+    "\n",
+    "El estudio tiene por finalidad estimar el precio del alquiler de la vivienda en Madrid. Para ello se utilizarán las siguientes fuentes de datos:\n",
+    "\n",
+    "   * Datos catastrales de Madrid, obtenidos del catastro\n",
+    "   * Datos del precio de alquiler en Madrid, obtenidos de IVIMA\n",
+    "   * Información gráfica en formato \"shape\" de los barrios de Madrid\n",
+    "\n",
+    "## Descripción de los datos utilizados\n",
+    "\n",
+    "### Datos catastrales\n",
+    "\n",
+    "Los datos catastrales se pueden descargar de la [web de catastro](https://www.sedecatastro.gob.es/OVCFrames.aspx?TIPO=TIT&a=masiv), accesibles con certificado digital, dentro de la sección descarga de información alfanumérica.\n",
+    "\n",
+    "Los datos catastrales se procesarán para obtener la información de las viviendas de Madrid, relativa a:\n",
+    "\n",
+    "* localización de las viviendas tanto alfanumérica (dirección) como geolocalización (coordenadas x,y)\n",
+    "* superficie\n",
+    "* presencia de garage\n",
+    "* altura\n",
+    "* antigüedad\n",
+    "\n",
+    "### Datos con precios de alquiler\n",
+    "\n",
+    "Para obtener los precios de alquiler de un conjunto de viviendas de Madrid, se utilizarán los datos del IVIMA (Instituto de la vivienda de Madrid), alojados en [plan alquila](http://www.planalquila.org/).\n",
+    "Este conjunto de datos contiene información de:\n",
+    "\n",
+    "* localización de las viviendas\n",
+    "* superficie\n",
+    "* presencia de garage\n",
+    "* altura\n",
+    "* supercifie\n",
+    "* precio de alquiler\n",
+    "\n",
+    "### Datos y geolocalización de barrios de Madrid\n",
+    "\n",
+    "Se utiliza también una capa _shape_ con la geolocalización de los barrios de Madrid, alojada en [barrios Madrid](http://www.madrid.org/nomecalles/DescargaBDTCorte.icm), sección _Delimitaciones territoriales_, fichero _Barrios Madrid._\n",
+    "\n",
+    "Este fichero se utilizará para asociar el barrio a cada una de las viviendas, así como para la representación del cuadro de mando final.\n",
+    "\n",
+    "### Enriquecimiento y relación entre fuentes de datos\n",
+    "\n",
+    "Con la finalidad de que el modelo predictivo sea lo más ajustado posible, se enriquecerán las distintas fuentes de información disponibles, añadiendo la siguiente información a cada una de ellas:\n",
+    "\n",
+    "* datos catastrales. Barrio desde el shape de barrios\n",
+    "* datos IVIMA. Coordenadas (x,y), y antigüedad desde catastro; Barrio desde el shape de barrios\n",
+    "\n",
+    "\n",
+    "## Estructura de ficheros y directorios\n",
+    "\n",
+    "Para el correcto funcionamiento del código, se ha definido estructura de directorios en la que se alojarán los distintos ficheros de datos, código y resultados. Dicha estructura se refleja en la siguiente imagen:\n",
+    "\n",
+    "![sin titulo](./graphs/dirs_tree.png)\n",
+    "\n",
+    "\n",
+    "## Descripción del código\n",
+    "\n",
+    "\n",
+    "\n",
+    "## Descripción y uso del Dashboard\n",
+    "\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python [Root]",
+   "language": "python",
+   "name": "Python [Root]"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
