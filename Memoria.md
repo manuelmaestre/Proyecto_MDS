@@ -101,7 +101,21 @@ Al igual que el script anterior, podrían procesarse varios municipios de catast
 
 ### 03_Procesar_datos_IVIMA.ipynb
 
-El tercer script de Python une los distintos ficheros con los datos de alquiler descargados de [IVIMA](http://www.planalquila.org/) y enriquece esta información con los datos necesarios de catastro. Para ello es necesario realizar un cruce por literales de calle, normalizando las direcciones de IVIMA a las de catastro.
+El tercer script de Python une los distintos ficheros con los datos de alquiler descargados de [IVIMA](http://www.planalquila.org/) y enriquece esta información con los datos necesarios de catastro. Para ello es necesario realizar un cruce por literales de calle, normalizando las direcciones de IVIMA a las de catastro, en esta fase hay una comprobación y corrección manual de aquellos tipos de vía que no se pueden asociar de forma directa.
+
+## R 
+
+Los ficheros de código de Python se encuentran en ./code/clean/R, la ejecución del código debe realizarse en este orden:
+
+### 01_Cruce_calles_fecha_edificios.R
+
+La finalidad de este código es asociar los literales de calle, tanto el tipo de vía como el nombre de la calle de catastro e IVIMA de forma que se puedan poblar en IVIMA los datos adicionales procedente de catastro.
+Además de los ficheros generados en pasos anteriores se utiliza también como entrada el fichero de catastro que añade la descripción del tipo de vía al identificador de tipo de vía, que se puede obtener en [tipos de via catastro](http://fpe.hazi.es/datos/files/cursos/10006_4.pdf), pág 42. Este listado en formato texto, separado por ";" está ubicado en ./data/clean/CAT/tipo_via_cat.csv.
+
+Los literales de nombre de calle que no coinciden exactamente, se _"rankean"_ calculando la distancia de Levenstein al resto de calles, seleccionando manualmente las coincidencias. Se realizan tres iteraciones de revisión manual de coincidencias. Si no se ha realizado una comprobación manual previa, tras las revisiones se crea un fichero de salida para evitar este proceso manual en futuras ejecuciones, de lo contrario se evitan las comprobaciones manuales y se carga el fichero ya existente. Si hay coincidencia de literales, se pondrá un 1 en la última celda de la tabla que se abre, de lo contrario se codificará con un 0.
+
+Finalmente se obtiene el nombre e id del barrio al que pertenecen las fincas tanto de IVIMA como de catastro, cruzando las coordenadas de las mismas con el shape de barrios, guardado en 
+
 
 ## Descripción y uso del Dashboard
 
