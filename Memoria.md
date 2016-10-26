@@ -62,11 +62,50 @@ Para el correcto funcionamiento del código, se ha definido estructura de direct
 
 ![sin titulo](./graphs/dirs_tree.png)
 
+Para facilitar la replicabilidad del estudio además del repositorio de github, se pueden descargar tanto la estructura de directorios con los datos y el código sin ejecutar de:
+
+__AÑADIR ENLACE A ESTRUCTURA CLEAN__
+
+como el proyecto completo: la estructura de directorios, los datos originales y los ficheros creados por el código ejecutado de:
+
+__AÑADIR ENLACE A ESTRUCTURA COMPLETA__
+
 
 ## Descripción del código
 
+El código para obtener los datos finales del estudio se ha dividido en varios ficheros de Python y R, cuya ejecución secuencial se detalla a continuación.
 
+Para ejecutar el código será necesario tener instalado en el sistema Python y R. El estudio se ha realizado sobre el SO Linux, por lo que para su ejecución en otros SO habrá que adaptar las partes del código que hacen referencia a las rutas de ficheros.
+
+## Python
+
+Los ficheros de código de Python se encuentran en ./code/clean/Python, están escritos para ejecutarse en un notebook de python, este orden:
+
+### 01_separar_ficheros_CAT_tipos.ipynb
+
+Este script toma los ficheros de datos de catastro que estén en el directorio ./data/raw/CAT/pendientes y los separa en los tipos descritos en el documento [descripción catastro](http://www.catastro.minhap.es/documentos/formatos_intercambio/catastro_fin_cat_2006.pdf), que serán utilizados para obtener la información de viviendas de Madrid . Procesa dichos ficheros, generando 3 ficheros (tipo11, tipo15 y tipo14) en el directorio .data/clean/CAT/. Mueve los ficheros originales de catastro a ./data/raw/CAT/procesados para evitar reprocesos en ejecuciones posteriores.
+Para ellos son necesarios los ficheros de esquema que describen los campos a extraer, alojados en ./data/clean/aux_files
+
+Aunque sólo se van a utilizar los datos de catastro de Madrid, el script está preparado para procesar otros ficheros de diferentes municipios que pudiesen alojarse en el directorio de datos de entrada.
+
+Este script utiliza la librería [csv toolkit](https://csvkit.readthedocs.io/en/0.9.1/) que deberá estar instalada en el sistema.
+
+### 02_Crear_ficheros_enriquecidos_t15.ipynb
+
+Este script utiliza los ficheros creados en el paso anterior, ubicados en .data/clean/CAT/ para crear un único fichero de salida que contiene la información de viviendas de catastro con la información enriquecida procedente de los diferentes ficheros generados en el punto anterior, y que va a ser utilizada posteriormente para generación del modelo de estimación.
+
+
+Finalmente mueve los ficheros de catastro utilizados a .data/clean/CAT/procesados para evitar reprocesos en ejecuciones posteriores.
+
+Al igual que el script anterior, podrían procesarse varios municipios de catastro.
+
+### 03_Procesar_datos_IVIMA.ipynb
+
+El tercer script de Python une los distintos ficheros con los datos de alquiler descargados de [IVIMA](http://www.planalquila.org/) y enriquece esta información con los datos necesarios de catastro. Para ello es necesario realizar un cruce por literales de calle, normalizando las direcciones de IVIMA a las de catastro.
 
 ## Descripción y uso del Dashboard
+
+
+
 
 
