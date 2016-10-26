@@ -10,7 +10,7 @@ library(rgdal)
 library(readxl)
 
 
-clean.data.dir <- '../../../../data/clean'
+clean.data.dir <- '../../../data/clean'
 file.fincas.ivima <- paste(clean.data.dir,  "/IVIMA/fincas_ivima.csv", sep = "")
 file.fincas.cat <- paste(clean.data.dir,  "/ficheros_preparados/BI_28_900_U_2016-01-23.csv.gz", sep = "")
 file.tipos.via.cat <- paste(clean.data.dir,  "/CAT/tipo_via_cat.csv", sep = "")
@@ -99,7 +99,7 @@ if (file.exists(file.calles.cruzadas) == F)
   matriz_lev$N <- NULL
   matriz_lev <- matriz_lev[, distancia := adist(nombre_via_ivima, nombre_via_cat)/max(c(nchar(nombre_via_ivima), nchar(nombre_via_cat))), by = "nombre_via_ivima"]
   matriz_lev <- matriz_lev[, ranking := rank(distancia, ties = "random"), by = "nombre_via_ivima"]
-  
+
   ## Hay que revisar manual/visualmente las coincidencias, marcarlas como correctas añadir a calles cruzadas, eliminar de la matriz y repetir para el siguiente
   ## ranking, hasta conseguir una normalización suficiente
   
@@ -111,8 +111,8 @@ if (file.exists(file.calles.cruzadas) == F)
   # Por defecto todas las lineas aparecen marcadas correcta=1, borrar manualmente el 1 de las líneas que no coincidan
   matriz_analisis <- edit(matriz_analisis)
   calles_cruzadas <- rbind(calles_cruzadas, matriz_analisis[is.na(matriz_analisis$correcta) == F, c("tipo_via", "nombre_via_ivima", "nombre_via_cat")])
-  
-  # Eliminamos las cruzadas para analizar las de ranking 2
+
+    # Eliminamos las cruzadas para analizar las de ranking 2
   matriz_analisis <- matriz_lev[ranking==2]
   calles_cruzadas$mark <- 1
   matriz_analisis <- merge(matriz_analisis, calles_cruzadas, all.x = T, by.x = c("tipo_via", "nombre_via_ivima"), 
@@ -123,9 +123,8 @@ if (file.exists(file.calles.cruzadas) == F)
   matriz_analisis <- edit(matriz_analisis)
   matriz_analisis$mark <- 1
   calles_cruzadas <- rbind(calles_cruzadas, matriz_analisis[is.na(matriz_analisis$correcta) == F, c("tipo_via", "nombre_via_ivima", "nombre_via_cat", "mark")])
-  
-  
-  # Eliminamos las cruzadas para analizar las de ranking 3
+
+    # Eliminamos las cruzadas para analizar las de ranking 3
   matriz_analisis <- matriz_lev[ranking==3]
   calles_cruzadas$mark <- 1
   matriz_analisis <- merge(matriz_analisis, calles_cruzadas, all.x = T, by.x = c("tipo_via", "nombre_via_ivima"), 
@@ -134,6 +133,7 @@ if (file.exists(file.calles.cruzadas) == F)
   colnames(matriz_analisis) <- c("tipo_via", "nombre_via_ivima", "nombre_via_cat", "distancia", "ranking")
   matriz_analisis$correcta <- 1
   matriz_analisis <- edit(matriz_analisis)
+
   matriz_analisis$mark <- 1
   calles_cruzadas <- rbind(calles_cruzadas, matriz_analisis[is.na(matriz_analisis$correcta) == F, c("tipo_via", "nombre_via_ivima", "nombre_via_cat", "mark")])
   
