@@ -272,6 +272,14 @@ fincas.ivima.enriquecidas$desbarrio <- NULL
 fincas.ivima.enriquecidas <- fincas.ivima.enriquecidas[is.na(fincas.ivima.enriquecidas$altura_num) == F,]
 fincas.ivima.enriquecidas$idbarrio <- as.factor(fincas.ivima.enriquecidas$idbarrio)
 
+## Ponemos en el tipo de via de catastro un literal reconocible en lugar de la abreviatura
+
+tipos_via_cat <- data.table(read.csv(file.tipos.via.cat, header = T, sep = ';'))
+tipos_via_cat$descripcion <- str_replace(tipos_via_cat$descripcion, ', ', '-')
+colnames(tipos_via_cat) = c('tipo_via', 'descripcion')
+fincas_catastro <- merge(fincas_catastro, tipos_via_cat, by.x = 'tipo_via', by.y ='tipo_via')
+
+
 write.csv(fincas_catastro, str_c(clean.data.dir, '/modelo/fincas_catastro.csv'), row.names = F, fileEncoding = 'UTF-8')
 write.csv(fincas.ivima.enriquecidas, str_c(clean.data.dir, '/modelo/fincas_ivima.csv'), row.names = F, fileEncoding = 'UTF-8')
 

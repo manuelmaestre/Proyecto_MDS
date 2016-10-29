@@ -10,7 +10,7 @@ library(caTools)
 
 ## Carga datos
 
-clean.data.dir <- '../../../../data/clean/modelo'
+clean.data.dir <- '../../../data/clean/modelo'
 file.fincas.ivima <- paste(clean.data.dir,  "/fincas_ivima.csv", sep = "")
 file.fincas.cat <- paste(clean.data.dir,  "/fincas_catastro.csv", sep = "")
 file.fincas.catastro.out <- paste(clean.data.dir,  "/fincas_catastro_est_alquiler.csv", sep = "")
@@ -24,8 +24,6 @@ colnames(fincas.catastro)[21] <- "Garaje"
 colnames(fincas.catastro)[18] <- "metros"
 colnames(fincas.catastro)[22] <- "anio_max"
 colnames(fincas.catastro)[5] <- "altura_num"
-
-
 
 str(fincas.ivima)
 summary(fincas.ivima)
@@ -79,6 +77,7 @@ summary(modeloLmul)
 plot(modeloLmul$residuals)
 hist(modeloLmul$residuals)
 qqnorm(modeloLmul$residuals); qqline(modeloLmul$residuals,col=2)
+qqnorm(fincas.ivima.train$Precio)
 confint(modeloLmul,level=0.95)
 
 # RSE en fincas test. Hay que limitar las fincas de test a los datos de barrio de train
@@ -95,6 +94,7 @@ summary(modeloLmul.nobarrio)
 plot(modeloLmul.nobarrio$residuals)
 hist(modeloLmul.nobarrio$residuals)
 qqnorm(modeloLmul.nobarrio$residuals); qqline(modeloLmul.nobarrio$residuals,col=2)
+
 confint(modeloLmul.nobarrio,level=0.95)
 
 # RSE en fincas test. Hay que limitar las fincas de test a los datos de barrio de train
@@ -107,13 +107,13 @@ rmse.1 <- sqrt(mean((predict.lm(modeloLmul.nobarrio, fincas.ivima.test) - fincas
 
 ## Modelo KNN con validación cruzada
 
-##set.seed(1234)
+set.seed(1234)
 
 # train the model
-##train.control <- trainControl(method = "cv", number = 10)
-##grid <- expand.grid(k = 1:20)
-##modeloKNN <- train(Precio ~ metros+idbarrio+Garaje+altura_num+anio_max, data = fincas.ivima, trControl = train.control, method = "knn", tuneGrid = grid)
-##print(modeloKNN)
+train.control <- trainControl(method = "cv", number = 10)
+grid <- expand.grid(k = 1:20)
+modeloKNN <- train(Precio ~ metros+idbarrio+Garaje+altura_num+anio_max, data = fincas.ivima, trControl = train.control, method = "knn", tuneGrid = grid)
+print(modeloKNN)
 
 ## El modelo KNN da peores resultados que el modelo lineal multiple con interacción
 
@@ -146,7 +146,7 @@ colnames(fincas.catastro.otros.barrios)[ncol(fincas.catastro.otros.barrios)] <- 
 fincas.catastro <- rbind(fincas.catastro, fincas.catastro.otros.barrios)
 
 ## Revisamos los datos estimados
-## TODO: eliminar outliers por barrio en m2
+
 summary(fincas.catastro)
 fincas.catastro[fincas.catastro$precio.alquiler == max(fincas.catastro$precio.alquiler),]
 fincas.catastro[fincas.catastro$precio.alquiler == min(fincas.catastro$precio.alquiler),]
@@ -167,7 +167,7 @@ agrupado.barrio$idbarrio <- str_pad(agrupado.barrio$idbarrio,side = 'left',width
 agrupado.barrio$metros.totales <- agrupado.barrio$metros*agrupado.barrio$N
 agrupado.barrio$precio.alquiler.total <- agrupado.barrio$precio.alquiler * agrupado.barrio$N
 
-## Agregamos un indicador para calular la altura media ponderada en función de metros y altura
+## Agregamos un indicador para calular la altura media ponderada en función de metros y altura y descargar cálculos del dashboard
 agrupado.barrio$numerador.propon.alt <- agrupado.barrio$N * agrupado.barrio$metros * agrupado.barrio$altura_num^2
 agrupado.barrio$denominador.propon.alt <- agrupado.barrio$N * agrupado.barrio$metros * agrupado.barrio$altura_num
 agrupado.barrio$numerador.propon.anti <- agrupado.barrio$N * agrupado.barrio$metros * agrupado.barrio$anio_max^2
