@@ -1,5 +1,4 @@
 
-
 # Estimación precio alquiler en Madrid.  
 
 ***
@@ -26,7 +25,7 @@ Los datos catastrales se procesarán para obtener la información de las viviend
 
 * localización de las viviendas tanto alfanumérica (dirección) como geolocalización (coordenadas x,y)
 * superficie
-* presencia de garage
+* presencia de garaje
 * altura
 * antigüedad
 
@@ -37,7 +36,7 @@ Este conjunto de datos contiene información de:
 
 * localización de las viviendas
 * superficie
-* presencia de garage
+* presencia de garaje
 * altura
 * supercifie
 * precio de alquiler
@@ -105,21 +104,38 @@ El tercer script de Python une los distintos ficheros con los datos de alquiler 
 
 ## R 
 
-Los ficheros de código de Python se encuentran en ./code/clean/R, la ejecución del código debe realizarse en este orden:
+Los ficheros de código de R se encuentran en ./code/clean/R, la ejecución del código debe realizarse en este orden:
 
 ### 01_Cruce_calles_fecha_edificios.R
 
 La finalidad de este código es asociar los literales de calle, tanto el tipo de vía como el nombre de la calle de catastro e IVIMA de forma que se puedan poblar en IVIMA los datos adicionales procedente de catastro.
 Además de los ficheros generados en pasos anteriores se utiliza también como entrada el fichero de catastro que añade la descripción del tipo de vía al identificador de tipo de vía, que se puede obtener en [tipos de via catastro](http://fpe.hazi.es/datos/files/cursos/10006_4.pdf), pág 42. Este listado en formato texto, separado por ";" está ubicado en ./data/clean/CAT/tipo_via_cat.csv.
 
-Los literales de nombre de calle que no coinciden exactamente, se _"rankean"_ calculando la distancia de Levenstein al resto de calles, seleccionando manualmente las coincidencias. Se realizan tres iteraciones de revisión manual de coincidencias. Si no se ha realizado una comprobación manual previa, tras las revisiones se crea un fichero de salida para evitar este proceso manual en futuras ejecuciones, de lo contrario se evitan las comprobaciones manuales y se carga el fichero ya existente. Si hay coincidencia de literales, se pondrá un 1 en la última celda de la tabla que se abre, de lo contrario se codificará con un 0.
+Los literales de nombre de calle que no coinciden exactamente, se _"rankean"_ calculando la distancia de Levenstein al resto de calles, seleccionando manualmente las coincidencias. Se realizan tres iteraciones de revisión manual de coincidencias. Si no se ha realizado una comprobación manual previa, tras las revisiones se crea un fichero de salida para evitar este proceso manual en futuras ejecuciones, de lo contrario se evitan las comprobaciones manuales y se carga el fichero ya existente. Si hay coincidencia de literales, se pondrá un 1 en la última celda de la tabla que se abre, de lo contrario se codificará con un 0. Por defecto todas las asociaciones aparecen marcadas a 1 y hay que codificar manualmente a 0 aquellas en las que no haya coincidencia.
 
-Finalmente se obtiene el nombre e id del barrio al que pertenecen las fincas tanto de IVIMA como de catastro, cruzando las coordenadas de las mismas con el shape de barrios, guardado en 
+Posteriormente se obtiene el nombre e id del barrio al que pertenecen las fincas tanto de IVIMA como de catastro, cruzando las coordenadas de las mismas con el shape de barrios, guardado en '/SHP/Barrios Madrid/200001465.shp'
 
+Como último paso se generan los ficheros con los datos enriquecidos de fincas de IVIMA y catastro, guardándolos en /data/clean//modelo/fincas_ivima.csv y /data/clean//modelo/fincas_catastro.csv respectivamente.
+
+### 02_ML.R
+
+El último script utiliza los ficheros de datos generados por el anterior para crear un modelo predictivo para los alquileres de Madrid. Utilizando los datos de IVIMA que contienen todos los predictores que se han podido obtener y poblar desde la información de catastro:
+
+* superficie
++ antigüedad
++ barrio
++ altura
++ garaje
+
+Se ha utilizado un modelo líneal múltiple con validación cruzada para estimar el precio de alquiler de todas las viviendas contenidas en la información de catastro. Los estimadores que mayor información aportan al modelo son superficie y barrio,
+
+No hay datos predicivos de algunos barrios de Madrid, por lo que para poder dar una estimación del precio de alquiler de todas las viviendas se ha generado otro modelo que no incluye el predictor barrio y que sólo se aplicará a las fincas de los barrios sin datos de IVIMA. Este modelo tiene peores estimaciones que el completo, pero se ha optado por dar información para todas las fincas de Madrid en lugar de eliminar ciertos barrios. Los barrios a los que se aplicará este segundo modelo son: Atocha, Almagro, Ríos Rosas, El Goloso, Valdemarín, El Plantío y Horcajo.
+
+El modelo incluyendo la información de barrio tiene un RSME = 105.7, es decir, el valor real del precio del alquiler estará comprendido en el intervalo (valor estimado - 105.7, valor estimado + 105.7).
+Para el modelo sin el predictor de barrio, el RSME = 138.98. La estimación tiene mayor desviación que el modelo completo, pero se ha optado por dar una estimación frente a eliminar barrios completos del resultado.
+
+Se ha comparado este modelo lineal con un KNN con K=17, arrojando este último un RSME de 139.55, por lo que se ha optado por el modelo lineal.
+
+Finalmente se aplica cada uno de los modelos líneales creados a las fincas de catastros correspondientes para obtener el precio de alquiler estimado de cada una de las viviendas.
 
 ## Descripción y uso del Dashboard
-
-
-
-
-
