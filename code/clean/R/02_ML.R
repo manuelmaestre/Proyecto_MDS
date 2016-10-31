@@ -130,18 +130,14 @@ barrios.cat.no.ivima <- barrios.total[is.na(barrios.total$fuente.y) == T,]
 barrios.ivima$fuente <- NULL
 barrios.cat.no.ivima <- as.data.frame(barrios.cat.no.ivima$idbarrio)
 colnames(barrios.cat.no.ivima) <- c("idbarrio")
-
-## guardamos las fincas de barrios en catastro que no están en Ivima
-## Estimaremos el alquiler de estas con otro modelo que no incluya el barrio en los predictores
-
 fincas.catastro.otros.barrios <- merge(fincas.catastro, barrios.cat.no.ivima, by.x = 'idbarrio', by.y = 'idbarrio')
 fincas.catastro <- merge(fincas.catastro, barrios.ivima, by.x = 'idbarrio', by.y = 'idbarrio')
-fincas.catastro <- cbind(fincas.catastro, as.data.frame(predict.lm(modeloLmul, fincas.catastro)))
-colnames(fincas.catastro)[ncol(fincas.catastro)] <- 'precio.alquiler'
+fincas.catastro <- cbind(fincas.catastro, as.data.frame(predict.lm(modeloLmul, fincas.catastro, interval = "confidence")))
+setnames(fincas.catastro, c('fit', 'lwr', 'upr'), c('precio.alquiler', 'iconf_low', 'iconf_up'))
 
 fincas.catastro.otros.barrios <- cbind(fincas.catastro.otros.barrios,
-                                       as.data.frame(predict.lm(modeloLmul.nobarrio, fincas.catastro.otros.barrios)))
-colnames(fincas.catastro.otros.barrios)[ncol(fincas.catastro.otros.barrios)] <- 'precio.alquiler'
+                                       as.data.frame(predict.lm(modeloLmul.nobarrio, fincas.catastro.otros.barrios, interval = "confidence")))
+setnames(fincas.catastro.otros.barrios, c('fit', 'lwr', 'upr'), c('precio.alquiler', 'iconf_low', 'iconf_up'))
 
 fincas.catastro <- rbind(fincas.catastro, fincas.catastro.otros.barrios)
 
@@ -151,7 +147,7 @@ summary(fincas.catastro)
 fincas.catastro[fincas.catastro$precio.alquiler == max(fincas.catastro$precio.alquiler),]
 fincas.catastro[fincas.catastro$precio.alquiler == min(fincas.catastro$precio.alquiler),]
 fincas.catastro[fincas.catastro$precio.alquiler < 0,]
-fincas.catastro[fincas.catastro$barrio == 'El Viso',]
+
 
 ## Grabamos el fichero con las predicciones de catastro para los dashboards y presentaciones
 ## Un agrupado para los datos a nivel mapa y uno con direcciones para la búsqueda por dirección (sólo variables de interés)
@@ -176,13 +172,4 @@ agrupado.barrio$numerador.propon.superficie <- agrupado.barrio$N * agrupado.barr
 
 write.csv(fincas.catastro,file = file.fincas.catastro.out, row.names = F)
 write.csv(agrupado.barrio,file = file.barrios.out, row.names = F)
-
-
-
-
-
-
-
-
-
 
