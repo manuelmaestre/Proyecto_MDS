@@ -61,13 +61,17 @@ Para el correcto funcionamiento del código, se ha definido estructura de direct
 
 ![sin titulo](./graphs/dirs_tree.png)
 
-Para facilitar la replicabilidad del estudio además del repositorio de github, se pueden descargar tanto la estructura de directorios con los datos y el código sin ejecutar de:
+Para facilitar la replicabilidad del estudio además del repositorio de github, se pueden descargar tanto la estructura de directorios con los datos fuente y el código sin ejecutar de:
 
 __AÑADIR ENLACE A ESTRUCTURA CLEAN__
 
-como el proyecto completo: la estructura de directorios, los datos originales y los ficheros creados por el código ejecutado de:
+como el proyecto completo: la estructura de directorios, los datos originales y los ficheros creados por el código ejecutado en:
 
 __AÑADIR ENLACE A ESTRUCTURA COMPLETA__
+
+Los ficheros de datos y _dashboards_ de Tableau se pueden descargar de:
+
+__AÑADIR ENLACE A TABLEAU__
 
 
 ## Descripción del código
@@ -138,4 +142,19 @@ Se ha comparado este modelo lineal con un KNN con K=17, arrojando este último u
 
 Finalmente se aplica cada uno de los modelos líneales creados a las fincas de catastros correspondientes para obtener el precio de alquiler estimado de cada una de las viviendas.
 
-## Descripción y uso del Dashboard
+Se generan dos ficheros de salida, uno con los datos para cada vivienda, incluyendo el precio de alquiler estimado con su intervalo de confianza, utilizado en el _dashboard_ que presenta la información a nivel de domicilio, y otro con datos agrupados a nivel de barrio para reducir los cálculos en el _dashboard_ que presenta información a nivel de barrio y mejorar el tiempo de respuesta.
+
+## Descripción y uso de _Dashboards_
+
+Se han desarrollado 2 _dashboards_ en Tableau para la explotación de los datos generados. Uno a nivel de barrio y otro a nivel de dirección. Los _dashboards_ junto con los ficheros de datos necesarios se pueden descargar de
+__AÑADIR ENLACE A TABLEAU__
+
+### _Dashboard_ de barrios
+
+Para la creación de este _dashboard_ se ha utilizado la capa shape de barrios utilizada anteriormente para identificar el barrio de cada una de las fincas de los ficheros de catastro y de IVIMA, guardada en /data/clean/SHP/Barrios Madrid. Siguiendo el tutorial [shape en Tableau](https://onlinehelp.tableau.com/current/pro/desktop/en-us/maps_shapefiles.html), se han generado 2 ficheros de datos (nodes.csv y attributes.csv) para poder utilizar la capa en Tableau. Dichos archivos se utilizan junto con el generado en R con los datos agrupados a nivel de barrio (data/clean/modelo/barrios_alquiler.csv).
+
+Este _dashboard_ presenta la siguiente información:
+
+![sin titulo](./graphs/ds_barrios.JPG)
+
+Hay 3 mapas con información relativa a precio de alquiler, altura y antigüedad media y una tabla con los datos numéricos a nivel de barrio. Dicha información se adapta de forma dinámica dependiendo de las selecciones del usuario disponibles: rango de fechas, presencia de garaje y rango de alturas.
