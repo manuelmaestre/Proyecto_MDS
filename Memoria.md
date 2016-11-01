@@ -161,4 +161,11 @@ Hay 3 mapas con información relativa a precio de alquiler, altura y antigüedad
 
 La altura y antigüedad media están ponderadas respecto a la superficie de las viviendas.
 
+También se presenta información numérica a nivel de barrio, ajustada a las selecciones de los filtros. Dicha información incluye:
+
+* valor medio del precio de alquiler
+* valor medio ponderado a la superficie de antigüedad y altura
+* valor medio de superficie
+* número de viviendas en la selección
+
 
