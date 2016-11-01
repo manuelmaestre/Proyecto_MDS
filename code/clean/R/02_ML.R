@@ -11,10 +11,11 @@ library(caTools)
 ## Carga datos
 
 clean.data.dir <- '../../../data/clean/modelo'
+out.data.dir <- '../../../reports'
 file.fincas.ivima <- paste(clean.data.dir,  "/fincas_ivima.csv", sep = "")
 file.fincas.cat <- paste(clean.data.dir,  "/fincas_catastro.csv", sep = "")
-file.fincas.catastro.out <- paste(clean.data.dir,  "/fincas_catastro_est_alquiler.csv", sep = "")
-file.barrios.out <- paste(clean.data.dir,  "/barrios_alquiler.csv", sep = "")
+file.fincas.catastro.out <- paste(out.data.dir,  "/fincas_catastro_est_alquiler.csv", sep = "")
+file.barrios.out <- paste(out.data.dir,  "/barrios_alquiler.csv", sep = "")
 
 fincas.ivima <- read.csv(file = file.fincas.ivima, header = T,  encoding = 'UTF-8', stringsAsFactors = T)
 fincas.catastro <- as.data.table(read.csv(file = file.fincas.cat, header = T,  encoding = 'UTF-8', stringsAsFactors = T))
