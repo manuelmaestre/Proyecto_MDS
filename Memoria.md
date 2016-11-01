@@ -41,6 +41,8 @@ Este conjunto de datos contiene información de:
 * supercifie
 * precio de alquiler
 
+Los datos se han descargado manualmente para cada barrio dentro de los disponibles en la web y guardado en formato texto separado por tabulación en el directorio /data/raw/IVIMA
+
 ### Datos y geolocalización de barrios de Madrid
 
 Se utiliza también una capa _shape_ con la geolocalización de los barrios de Madrid, alojada en [barrios Madrid](http://www.madrid.org/nomecalles/DescargaBDTCorte.icm), sección _Delimitaciones territoriales_, fichero _Barrios Madrid._
@@ -65,13 +67,10 @@ Para facilitar la replicabilidad del estudio además del repositorio de github, 
 
 __AÑADIR ENLACE A ESTRUCTURA CLEAN__
 
-como el proyecto completo: la estructura de directorios, los datos originales y los ficheros creados por el código ejecutado en:
+así como el proyecto completo: la estructura de directorios, los datos originales y los ficheros creados por el código ejecutado en:
 
 __AÑADIR ENLACE A ESTRUCTURA COMPLETA__
 
-Los ficheros de datos y _dashboards_ de Tableau se pueden descargar de:
-
-__AÑADIR ENLACE A TABLEAU__
 
 
 ## Descripción del código
