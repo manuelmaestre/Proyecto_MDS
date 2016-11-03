@@ -11,10 +11,10 @@
       <connection class='federated'>
         <named-connections>
           <named-connection caption='nodes' name='textscan.1l9czqf0js7pca16c60jx1liqgh1'>
-            <connection class='textscan' directory='E:/reports' filename='nodes.csv' password='' server='' />
+            <connection class='textscan' directory='E:/' filename='nodes.csv' password='' server='' />
           </named-connection>
           <named-connection caption='barrios_alquiler (2)' name='textscan.0tqncci0q8ewak1727m0c1sxv1kf'>
-            <connection class='textscan' directory='E:/reports' filename='barrios_alquiler.csv' password='' server='' />
+            <connection class='textscan' directory='E:/' filename='barrios_alquiler.csv' password='' server='' />
           </named-connection>
         </named-connections>
         <relation join='inner' type='join'>
@@ -1372,7 +1372,7 @@
         </viewpoint>
         <viewpoint name='€Barrio' />
       </viewpoints>
-      <active id='-1' />
+      <active id='17' />
     </window>
     <window class='worksheet' name='Mapa€'>
       <cards>
